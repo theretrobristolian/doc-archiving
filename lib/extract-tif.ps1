@@ -13,7 +13,7 @@
         $DocumentDestination = Join-Path $DestinationPath $DocumentName
 
         if (Test-Path $DocumentDestination) {
-            Write-Log " - Skipping $DocumentName because extraction folder already exists."
+            write-log " - Skipping $DocumentName because extraction folder already exists."
             continue
         }
 
@@ -21,12 +21,12 @@
             Sort-Object Name
 
         if (-not $TifFiles) {
-            Write-Log " - Skipping $DocumentName because no TIF files were found." "WARN"
+            write-log " - Skipping $DocumentName because no TIF files were found." "WARN"
             continue
         }
 
         New-Item -ItemType Directory -Path $DocumentDestination -Force | Out-Null
-        Write-Log " - Extracting document folder: $DocumentName"
+        write-log " - Extracting document folder: $DocumentName"
 
         $PageNumber = 1
 
@@ -35,7 +35,7 @@
             $InputFile = $File.FullName
             $BaseName  = [System.IO.Path]::GetFileNameWithoutExtension($File.Name)
 
-            Write-Log "   - Extracting $($File.Name)..."
+            write-log "   - Extracting $($File.Name)..."
 
             & cmd.exe /c "`"$IrfanViewPath`" `"$InputFile`" /extract=`"($DocumentDestination\$BaseName,tif)`" /cmdexit"
 

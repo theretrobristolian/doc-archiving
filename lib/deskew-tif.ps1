@@ -6,14 +6,14 @@ Deskews extracted single-page TIFF files into the deskew output folder.
 This function expects the extracted folder to contain one subfolder per document.
 
 Example:
-2 - Extracted\
+2 - extracted\
     Document 1\
         Page001.tif
         Page002.tif
 
 It creates a matching folder in the deskewed directory:
 
-3 - Deskewed\
+3 - deskewed\
     Document 1\
         Page001.tif
         Page002.tif
@@ -30,7 +30,7 @@ The root folder where deskewed document folders will be created.
 The full path to deskew.exe.
 
 .EXAMPLE
-Deskew-TIF -SourcePath $Extracted -DeskewedPath $Deskewed -Deskew64Path $deskew64
+deskew-tif -SourcePath $Extracted -DeskewedPath $Deskewed -Deskew64Path $deskew64
 #>
 function deskew-tif {
     param (
@@ -45,19 +45,19 @@ function deskew-tif {
     )
 
     if (-not (Test-Path $SourcePath)) {
-        Write-Log "Source path does not exist: $SourcePath"
+        write-log "Source path does not exist: $SourcePath"
         exit 1
     }
 
     if (-not (Test-Path $Deskew64Path)) {
-        Write-Log "Deskew executable not found: $Deskew64Path"
+        write-log "Deskew executable not found: $Deskew64Path"
         exit 1
     }
 
     $DocumentFolders = Get-ChildItem -Path $SourcePath -Directory
 
     if (-not $DocumentFolders) {
-        Write-Log "No extracted document folders found in: $SourcePath"
+        write-log "No extracted document folders found in: $SourcePath"
         return
     }
 
@@ -67,20 +67,20 @@ function deskew-tif {
         $DocumentDestination = Join-Path $DeskewedPath $DocumentName
 
         if (Test-Path $DocumentDestination) {
-            Write-Log " - Skipping $DocumentName because deskew folder already exists."
+            write-log " - Skipping $DocumentName because deskew folder already exists."
             continue
         }
 
         $TifFiles = Get-ChildItem -Path $DocumentFolder.FullName -Filter *.tif -File -Recurse | Sort-Object FullName
         
         if (-not $TifFiles) {
-            Write-Log " - Skipping $DocumentName because no TIF files were found."
+            write-log " - Skipping $DocumentName because no TIF files were found."
             continue
         }
 
         New-Item -ItemType Directory -Path $DocumentDestination -Force | Out-Null
 
-        Write-Log " - Deskewing document folder: $DocumentName"
+        write-log " - Deskewing document folder: $DocumentName"
 
         foreach ($File in $TifFiles) {
 
@@ -92,7 +92,7 @@ function deskew-tif {
                 New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
             }
 
-            Write-Log "   - Deskewing $RelativePath..."
+            write-log "   - Deskewing $RelativePath..."
 
             & $Deskew64Path `
                 -t a `

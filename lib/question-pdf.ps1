@@ -1,4 +1,4 @@
-﻿function Question-PDF {
+﻿function question-pdf {
     param (
         [string]$SourcePath,
         [string]$OutputPath,
@@ -13,9 +13,9 @@
     $confirmation = Read-Host
     if ($confirmation -eq "N") {
         Write-Output ""
-        Convert-ToPDF -SourcePath $SourcePath -OutputPath $OutputPath -img2pdfPath $img2pdfPath
+        convert-topdf -SourcePath $SourcePath -OutputPath $OutputPath -img2pdfPath $img2pdfPath
     } elseif ($confirmation -eq "Y") {
-        AdditionalActions
+        additionalactions
     } else {
         Write-Host "Invalid input. Script exited."
     }

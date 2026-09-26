@@ -1,4 +1,4 @@
-﻿function set-irfanviewInidefaults {
+﻿function set-irfanviewinidefaults {
     param (
         [string]$IniFile,
         [int]$CompressionValue
@@ -63,5 +63,5 @@
 
     $output | Set-Content -Path $IniFile -Encoding UTF8
  
-    #Write-Log "IrfanView INI defaults applied."
+    #write-log "IrfanView INI defaults applied."
 }

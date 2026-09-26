@@ -14,10 +14,10 @@
                 -Path $FullPath `
                 -Force | Out-Null
 
-            Write-Log " - '$Folder' created."
+            write-log " - '$Folder' created."
         }
         else {
-            Write-Log " - '$Folder' already exists."
+            write-log " - '$Folder' already exists."
         }
     }
 }

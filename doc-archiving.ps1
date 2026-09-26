@@ -7,7 +7,7 @@ This script processes scanned documents through a staged folder workflow.
 
 Each document should be placed into its own folder under:
 
-1 - Source
+1 - source
 
 The script can then run these stages:
 
@@ -20,16 +20,16 @@ The workflow is designed to be resumable. Each stage checks whether the destinat
 
 .SWITCHES
 $Run_TIFF_Extraction
-When set to "Y", extracts multipage TIFF files from each document folder in 1 - Source into matching folders in 2 - Extracted.
+When set to "Y", extracts multipage TIFF files from each document folder in 1 - source into matching folders in 2 - extracted.
 
 $Run_Deskew
-When set to "Y", deskews files from 2 - Extracted into matching folders in 3 - Deskewed.
+When set to "Y", deskews files from 2 - extracted into matching folders in 3 - deskewed.
 
 $Run_Crop
-When set to "Y", crops files from 3 - Deskewed into matching folders in 4 - Cropped.
+When set to "Y", crops files from 3 - deskewed into matching folders in 4 - cropped.
 
 $Combine_to_PDF
-When set to "Y", combines files from 4 - Cropped into PDF files in 5 - PDFs.
+When set to "Y", combines files from 4 - cropped into PDF files in 5 - pdfs.
 
 .NOTES
 Author: David Little as TheRetroBristolian 2026.
@@ -64,7 +64,7 @@ $libDir             = "$scriptRoot\lib"                 # This specifies the loc
 $FirstRunLog        = "$scriptRoot\logs\firstrun.log"
 $AppsRoot           = Join-Path $scriptRoot "apps"
 $currentUsername    = $env:USERNAME
-$deskew64           = Join-Path $AppsRoot "Deskew\Bin\deskew.exe"
+$deskew64           = Join-Path $AppsRoot "deskew\bin\deskew.exe"
 
 ### Define the compression type mapping
 $compressionMapping = @{
@@ -98,11 +98,11 @@ $PaperSizes = @{
 
 ### Default folders to create on first run
 $RequiredFolders = @(
-    "1 - Source",
-    "2 - Extracted",
-    "3 - Deskewed",
-    "4 - Cropped",
-    "5 - PDFs",
+    "1 - source",
+    "2 - extracted",
+    "3 - deskewed",
+    "4 - cropped",
+    "5 - pdfs",
     "logs",
     "apps"
 )
@@ -129,7 +129,7 @@ start-script
 #region Pre-flight checks
 write-log "Running Pre-req checks..."
 write-log " - Checking OS Architecture..."
-$OSArch  = Get-OSArchitecture
+$OSArch  = get-osarchitecture
 write-log "  - Detected: $OSArch"
 #endregion
 write-log ""
@@ -144,13 +144,13 @@ if (-not (Test-Path $FirstRunLog)) {
     ensure-foldersexist -Folders $RequiredFolders
     write-log ""
     write-log "Checking if Irfanview is installed..."
-    Test-Dependency `
+    test-dependency `
         -Name "IrfanView" `
         -Path "C:\Program Files\IrfanView\i_view64.exe" `
         -DownloadPage "https://www.irfanview.com/"
     write-log ""
     write-log "Downloading required pre-req apps..."
-    Get-AppDownloads -Apps $Apps -Architecture $OSArch -AppsRoot $AppsRoot
+    get-appdownloads -Apps $Apps -Architecture $OSArch -AppsRoot $AppsRoot
 
     New-Item -ItemType File -Path $FirstRunLog -Force | Out-Null         # Create the marker file
     }
@@ -166,7 +166,7 @@ write-log ""
 write-log "IrfanView TIFF Compression Value:"
     if ($Set_Compression -eq "Y") {
         write-log " - Setting TIFF compression to $Compression ($CompressionNumber)."
-        #Set-IrfanViewIniDefaults -IniFile $inifile -CompressionValue $CompressionNumber
+        #set-irfanviewinidefaults -IniFile $inifile -CompressionValue $CompressionNumber
     }
     else {
     write-log " - Value defaulted to LZW."
@@ -186,7 +186,7 @@ write-log ""
 if ($Run_TIFF_Extraction -eq "Y") {
     write-log "Searching the Source directory '$Source' for documents to extract..."
     ### Call the function with global variables
-    Extract-TIF -SourcePath $Source -DestinationPath $Extracted -IrfanViewPath $IrfanView
+    extract-tif -SourcePath $Source -DestinationPath $Extracted -IrfanViewPath $IrfanView
     }
     else {
     write-log "Skipping Multi-Page TIFF extraction."
@@ -200,7 +200,7 @@ write-log "Attempting to run the 'deskew process' on the directory $extracted...
 if ($Run_Deskew -eq "Y") {
     ### Call the function for deskewing TIF files
     write-log " - Searching..."
-    Deskew-TIF -SourcePath $Extracted -DeskewedPath $Deskewed -Deskew64Path $deskew64
+    deskew-tif -SourcePath $Extracted -DeskewedPath $Deskewed -Deskew64Path $deskew64
 }
 else {
     write-log " - Skipping deskew and straighten process."
@@ -213,7 +213,7 @@ write-log ""
 write-log "Attempting Crop..."
 if ($Run_Crop -eq "Y") {
     ### Call Crop-Images function
-    Crop-ImagesRecursively -SourcePath $Deskewed -CroppedPath $Cropped -PaperSizes $PaperSizes -IrfanViewPath $IrfanView
+    crop-imagesrecursively -SourcePath $Deskewed -CroppedPath $Cropped -PaperSizes $PaperSizes -IrfanViewPath $IrfanView
 }
 else {
     write-log " - Skipping crop of deskewed images back to correct size."
@@ -228,8 +228,8 @@ $img2pdf     = Join-Path $AppsRoot "img2pdf\img2pdf.exe"
 write-log "Attempting to combine to PDF..."
 if ($Combine_to_PDF -eq "Y") {
     ### Call the function to start the process of combining to PDFs
-    Write-log "Searching the Cropped directory '$Cropped' for TIF files to convert and combine into PDFs..."
-    Question-PDF -SourcePath $Cropped -OutputPath $PDFs -img2pdfPath $img2pdf
+    write-log "Searching the Cropped directory '$Cropped' for TIF files to convert and combine into PDFs..."
+    question-pdf -SourcePath $Cropped -OutputPath $PDFs -img2pdfPath $img2pdf
 }
 else {
     write-log " - Skipping combining the cropped images to a PDF."
@@ -237,4 +237,4 @@ else {
 }
 #endregion
 write-log ""
-Exit-Script                                          # Stop timer, write summary output, and exit cleanly.
+exit-script                                          # Stop timer, write summary output, and exit cleanly.

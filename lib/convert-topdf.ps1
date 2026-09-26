@@ -1,4 +1,4 @@
-﻿function Convert-ToPDF {
+﻿function convert-topdf {
     param (
         [string]$SourcePath,
         [string]$OutputPath,

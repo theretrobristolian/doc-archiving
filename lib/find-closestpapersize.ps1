@@ -1,4 +1,4 @@
-﻿function Find-ClosestPaperSize {
+﻿function find-closestpapersize {
     param (
         [int]$Width,
         [int]$Height,

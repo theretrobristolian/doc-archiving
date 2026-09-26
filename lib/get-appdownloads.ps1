@@ -8,7 +8,7 @@ function get-appdownloads {
 
     foreach ($App in $Apps) {
         if (-not $App.Urls.ContainsKey($Architecture)) {
-            Write-log " - Skipping $($App.Name): no URL for $Architecture"
+            write-log " - Skipping $($App.Name): no URL for $Architecture"
             continue
         }
 

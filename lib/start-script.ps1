@@ -1,11 +1,11 @@
 ﻿function start-script {
     $CurrentUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
 
-    Write-Log "----------------------------------------------------------------"
+    write-log "----------------------------------------------------------------"
     
-    Write-Log "Command: '$CommandName'"
-    Write-Log "Script : '$ScriptName' started."
-    Write-Log "Root   : '$scriptRoot'"
-    Write-Log "User   : '$CurrentUser'"
-    Write-Log "----------------------------------------------------------------"
+    write-log "Command: '$CommandName'"
+    write-log "Script : '$ScriptName' started."
+    write-log "Root   : '$scriptRoot'"
+    write-log "User   : '$CurrentUser'"
+    write-log "----------------------------------------------------------------"
 }

@@ -1,4 +1,4 @@
-﻿function Crop-ImagesRecursively {
+﻿function crop-imagesrecursively {
     param (
         [string]$SourcePath,
         [string]$CroppedPath,
@@ -20,7 +20,7 @@
         $image.Dispose()
 
         # Find the closest paper size
-        $closestSize = Find-ClosestPaperSize -Width $width -Height $height -PaperSizes $PaperSizes
+        $closestSize = find-closestpapersize -Width $width -Height $height -PaperSizes $PaperSizes
 
         if ($null -eq $closestSize) {
             # Calculate the differences for the closest size
