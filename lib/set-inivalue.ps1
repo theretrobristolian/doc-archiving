@@ -1,7 +1,6 @@
 function set-inivalue {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
         [System.Collections.Generic.List[string]]$Lines,
 
         [Parameter(Mandatory)]
@@ -14,6 +13,10 @@ function set-inivalue {
         [AllowEmptyString()]
         [string]$Value
     )
+
+    if ($null -eq $Lines) {
+        throw "The INI content collection cannot be null."
+    }
 
     $sectionStart = -1
     $sectionEnd = $Lines.Count
