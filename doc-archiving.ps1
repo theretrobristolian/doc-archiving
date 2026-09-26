@@ -52,11 +52,11 @@ $CommandName        = "Document Archiver Script"        # Command display name.
 $ScriptName         = "doc-archiving"                   # Script and log name.
 
 #Folder variables
-$Source    = Join-Path $scriptRoot "1 - source"
-$Extracted = Join-Path $scriptRoot "2 - extracted"
-$Deskewed  = Join-Path $scriptRoot "3 - deskewed"
-$Cropped   = Join-Path $scriptRoot "4 - cropped"
-$PDFs      = Join-Path $scriptRoot "5 - pdfs"
+$Source             = Join-Path $scriptRoot "1 - source"
+$Extracted          = Join-Path $scriptRoot "2 - extracted"
+$Deskewed           = Join-Path $scriptRoot "3 - deskewed"
+$Cropped            = Join-Path $scriptRoot "4 - cropped"
+$PDFs               = Join-Path $scriptRoot "5 - pdfs"
 
 ### Global Variables
 $logPath            = "$scriptRoot\logs\$scriptname.log"# This gives the default path + name for the log location
@@ -65,6 +65,7 @@ $FirstRunLog        = "$scriptRoot\logs\firstrun.log"
 $AppsRoot           = Join-Path $scriptRoot "apps"
 $currentUsername    = $env:USERNAME
 $deskew64           = Join-Path $AppsRoot "deskew\bin\deskew.exe"
+$img2pdf            = Join-Path $AppsRoot "img2pdf\img2pdf.exe"
 
 ### Define the compression type mapping
 $compressionMapping = @{
@@ -127,6 +128,7 @@ Get-ChildItem -Path $libDir -Filter '*.ps1' -File | ForEach-Object {
 #endregion
 start-script
 #region Pre-flight checks
+write-log ""
 write-log "Running Pre-req checks..."
 write-log " - Checking OS Architecture..."
 $OSArch  = get-osarchitecture
@@ -161,7 +163,7 @@ if (-not (Test-Path $FirstRunLog)) {
 write-log ""
 write-log "----------------------------------------------------------------"
 write-log ""
-#region blah
+#region THIS IS NOT WORKING
 
 write-log "IrfanView TIFF Compression Value:"
     if ($Set_Compression -eq "Y") {
@@ -220,10 +222,10 @@ else {
 
 }
 #endregion
-
-#region pdf merge
 write-log ""
-$img2pdf     = Join-Path $AppsRoot "img2pdf\img2pdf.exe"
+write-log "----------------------------------------------------------------"
+write-log ""
+#region pdf merge
 
 write-log "Attempting to combine to PDF..."
 if ($Combine_to_PDF -eq "Y") {
