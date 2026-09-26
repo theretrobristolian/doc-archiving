@@ -1,4 +1,4 @@
-﻿function test-dependancy {
+﻿function Test-Dependency {
     param (
         [string]$Name,
         [string]$Path,
