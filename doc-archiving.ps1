@@ -63,7 +63,6 @@ $logPath            = "$scriptRoot\logs\$scriptname.log"# This gives the default
 $libDir             = "$scriptRoot\lib"                 # This specifies the local repo of functions to import them all
 $FirstRunLog        = "$scriptRoot\logs\firstrun.log"
 $AppsRoot           = Join-Path $scriptRoot "apps"
-$currentUsername    = $env:USERNAME
 $deskew64           = Join-Path $AppsRoot "deskew\bin\deskew.exe"
 $img2pdf            = Join-Path $AppsRoot "img2pdf\img2pdf.exe"
 
@@ -76,16 +75,7 @@ $compressionMapping = @{
 
 ### IrfanView specific variables
 $IrfanView          = "C:\Program Files\IrfanView\i_view64.exe"
-$inifile            = "C:\Users\$currentUsername\AppData\Roaming\IrfanView\i_view64.ini"
-$settingName        = "Save Compression"
-$CompressionNumber  = $compressionMapping[$compression]
-
-$DesiredIrfanViewSettings = @(
-    @{ Section = "TIFF"; Key = "Save Compression"; Value = $CompressionNumber }
-    @{ Section = "TIFF"; Key = "SaveAllPages";      Value = 1 }
-    @{ Section = "TIFF"; Key = "GrayPalette";       Value = 1 }
-    @{ Section = "Save"; Key = "SaveExtension";     Value = "tif" }
-)
+$IrfanViewIniPath   = $null # Optional: set to a specific INI file or folder; $null enables automatic discovery.
 
 ### Define Paper Sizes ###
 #This hash table is working on the assumption that the input files are 600DPI
@@ -163,22 +153,39 @@ if (-not (Test-Path $FirstRunLog)) {
 write-log ""
 write-log "----------------------------------------------------------------"
 write-log ""
-#region THIS IS NOT WORKING
+#region IrfanView configuration
+write-log "Configuring IrfanView defaults..."
 
-write-log "IrfanView TIFF Compression Value:"
-    if ($Set_Compression -eq "Y") {
-        write-log " - Setting TIFF compression to $Compression ($CompressionNumber)."
-        #set-irfanviewinidefaults -IniFile $inifile -CompressionValue $CompressionNumber
-    }
-    else {
-    write-log " - Value defaulted to LZW."
-    <#
-    Update-IniSectionSetting `
-        -IniFile $inifile `
-        -Section "TIFF" `
-        -Key "Save Compression" `
-        -Value 1
-#>
+if ($Set_Compression -eq "Y") {
+    $EffectiveCompression = $Compression
+}
+else {
+    $EffectiveCompression = "LZW"
+    write-log " - Compression defaulted to LZW."
+}
+
+if (-not $compressionMapping.ContainsKey($EffectiveCompression)) {
+    throw "Unsupported TIFF compression type: $EffectiveCompression"
+}
+
+$CompressionNumber = $compressionMapping[$EffectiveCompression]
+
+$DesiredIrfanViewSettings = @(
+    @{ Section = "TIFF"; Key = "Save Compression"; Value = $CompressionNumber }
+    @{ Section = "TIFF"; Key = "SaveAllPages";      Value = 1 }
+    @{ Section = "TIFF"; Key = "GrayPalette";       Value = 1 }
+    @{ Section = "Save"; Key = "SaveExtension";     Value = "tif" }
+)
+
+try {
+    $inifile = get-irfanviewinifile -IrfanViewPath $IrfanView -OverridePath $IrfanViewIniPath
+    write-log " - Active INI file: $inifile"
+    write-log " - Setting TIFF compression to $EffectiveCompression ($CompressionNumber)."
+    set-irfanviewinidefaults -IniFile $inifile -Settings $DesiredIrfanViewSettings
+}
+catch {
+    write-log " - IrfanView configuration failed: $($_.Exception.Message)"
+    throw
 }
 #endregion
 write-log ""
