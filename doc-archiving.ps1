@@ -66,6 +66,12 @@ $AppsRoot           = Join-Path $scriptRoot "apps"
 $deskew64           = Join-Path $AppsRoot "deskew\bin\deskew.exe"
 $img2pdf            = Join-Path $AppsRoot "img2pdf\img2pdf.exe"
 
+### Deskew safety settings
+$DeskewDetectionSearchAngle  = 10.0     # Search widely enough to identify suspicious results.
+$DeskewMinimumCorrectionAngle = 0.10    # Smaller angles are copied unchanged.
+$DeskewMaximumCorrectionAngle = 2.0     # Larger angles are copied unchanged and flagged for review.
+$DeskewDetectionMargins       = "5,5,%" # Ignore 5% around the page edge during detection.
+
 ### Define the compression type mapping
 $compressionMapping = @{
       'CCITT Fax 4' = 4
@@ -209,7 +215,17 @@ write-log "Attempting to run the 'deskew process' on the directory $extracted...
 if ($Run_Deskew -eq "Y") {
     ### Call the function for deskewing TIF files
     write-log " - Searching..."
-    deskew-tif -SourcePath $Extracted -DeskewedPath $Deskewed -Deskew64Path $deskew64
+    $DeskewArguments = @{
+        SourcePath = $Extracted
+        DeskewedPath = $Deskewed
+        Deskew64Path = $deskew64
+        DetectionSearchAngle = $DeskewDetectionSearchAngle
+        MinimumCorrectionAngle = $DeskewMinimumCorrectionAngle
+        MaximumCorrectionAngle = $DeskewMaximumCorrectionAngle
+        DetectionMargins = $DeskewDetectionMargins
+    }
+
+    deskew-tif @DeskewArguments
 }
 else {
     write-log " - Skipping deskew and straighten process."

@@ -195,7 +195,18 @@ If a document needs to be reprocessed, remove its corresponding folder from the 
 
 ## Processing details
 
-Deskew currently uses automatic threshold detection, a maximum expected skew of 10 degrees, a white background and the input TIFF compression scheme where supported.
+Deskew now uses a guarded two-pass process:
+
+1. Detect the angle without changing the source page.
+2. Ignore 5% around the page edges during detection.
+3. Copy pages below 0.10 degrees unchanged.
+4. Correct pages from 0.10 through 2.00 degrees.
+5. Copy pages above 2.00 degrees unchanged and mark them `[REVIEW]` in the log.
+6. Copy the original page unchanged if detection, angle parsing or output generation fails.
+
+The detector still searches up to 10 degrees so large suspicious results are identified rather than silently clamped. Accepted pages are deskewed using automatic threshold detection, a white background and the input TIFF compression scheme where supported.
+
+These safety values are grouped under `### Deskew safety settings` in `doc-archiving.ps1`. This favours preserving a slightly skewed source page over applying a destructive false rotation.
 
 Cropping compares each deskewed page with the configured paper profiles, including rotated orientation, and centre-crops a matching page to the target dimensions.
 
