@@ -59,7 +59,8 @@ function deskew-tif {
         [ValidateRange(0.1, 45)]
         [double]$MaximumCorrectionAngle = 2.0,
 
-        [string]$DetectionMargins = "5,5,%"
+        [AllowNull()]
+        [string]$DetectionMargins = $null
     )
 
     if (-not (Test-Path -LiteralPath $SourcePath -PathType Container)) {
@@ -85,14 +86,24 @@ function deskew-tif {
         return
     }
 
-    write-log (
+    $MarginDescription = if ($DetectionMargins) {
+        $DetectionMargins
+    }
+    else {
+        "disabled"
+    }
+
+    $SafetyMessage = (
         " - Deskew safety limits: apply {0:N2} to {1:N2} degrees; " +
-        "search +/-{2:N2} degrees; margins {3}." -f
+        "search +/-{2:N2} degrees; margins {3}."
+    ) -f @(
         $MinimumCorrectionAngle,
         $MaximumCorrectionAngle,
         $DetectionSearchAngle,
-        $DetectionMargins
+        $MarginDescription
     )
+
+    write-log $SafetyMessage
 
     foreach ($DocumentFolder in $DocumentFolders) {
         $DocumentName = $DocumentFolder.Name
@@ -133,11 +144,15 @@ function deskew-tif {
             $DetectionArguments = @(
                 "-t", "a",
                 "-a", ([string]::Format([Globalization.CultureInfo]::InvariantCulture, "{0}", $DetectionSearchAngle)),
-                "-m", $DetectionMargins,
                 "-g", "d",
-                "-s", "s",
-                $File.FullName
+                "-s", "s"
             )
+
+            if ($DetectionMargins) {
+                $DetectionArguments += @("-m", $DetectionMargins)
+            }
+
+            $DetectionArguments += $File.FullName
 
             $DetectionOutput = @(& $Deskew64Path @DetectionArguments 2>&1)
             $DetectionExitCode = $LASTEXITCODE
@@ -147,7 +162,17 @@ function deskew-tif {
                 Copy-Item -LiteralPath $File.FullName -Destination $OutputFile -Force
                 $UnchangedCount++
                 $ReviewCount++
+
+                $DetectionError = ($DetectionText -replace '\s+', ' ').Trim()
+                if ($DetectionError.Length -gt 500) {
+                    $DetectionError = $DetectionError.Substring(0, 500) + "..."
+                }
+
                 write-log "     [REVIEW] Detection failed with exit code $DetectionExitCode; copied unchanged."
+                if ($DetectionError) {
+                    write-log "       Deskew output: $DetectionError"
+                }
+
                 continue
             }
 
@@ -210,13 +235,17 @@ function deskew-tif {
             $DeskewArguments = @(
                 "-t", "a",
                 "-a", ([string]::Format([Globalization.CultureInfo]::InvariantCulture, "{0}", $DetectionSearchAngle)),
-                "-m", $DetectionMargins,
                 "-l", ([string]::Format([Globalization.CultureInfo]::InvariantCulture, "{0}", $MinimumCorrectionAngle)),
                 "-b", "FFFFFF",
                 "-c", "tinput",
-                "-o", $OutputFile,
-                $File.FullName
+                "-o", $OutputFile
             )
+
+            if ($DetectionMargins) {
+                $DeskewArguments += @("-m", $DetectionMargins)
+            }
+
+            $DeskewArguments += $File.FullName
 
             $DeskewOutput = @(& $Deskew64Path @DeskewArguments 2>&1)
             $DeskewExitCode = $LASTEXITCODE
@@ -226,7 +255,15 @@ function deskew-tif {
                 Copy-Item -LiteralPath $File.FullName -Destination $OutputFile -Force
                 $UnchangedCount++
                 $ReviewCount++
+                $DeskewError = (($DeskewOutput | ForEach-Object { $_.ToString() }) -join " " -replace '\s+', ' ').Trim()
+                if ($DeskewError.Length -gt 500) {
+                    $DeskewError = $DeskewError.Substring(0, 500) + "..."
+                }
+
                 write-log "     [REVIEW] Deskew failed with exit code $DeskewExitCode; copied unchanged."
+                if ($DeskewError) {
+                    write-log "       Deskew output: $DeskewError"
+                }
                 continue
             }
 

@@ -70,7 +70,7 @@ $img2pdf            = Join-Path $AppsRoot "img2pdf\img2pdf.exe"
 $DeskewDetectionSearchAngle  = 10.0     # Search widely enough to identify suspicious results.
 $DeskewMinimumCorrectionAngle = 0.10    # Smaller angles are copied unchanged.
 $DeskewMaximumCorrectionAngle = 2.0     # Larger angles are copied unchanged and flagged for review.
-$DeskewDetectionMargins       = "5,5,%" # Ignore 5% around the page edge during detection.
+$DeskewDetectionMargins       = $null   # Optional for newer builds, for example "5,5,%".
 
 ### Define the compression type mapping
 $compressionMapping = @{
