@@ -291,7 +291,7 @@ write-log ""
 write-log "Attempting Crop..."
 if ($Run_Crop -eq "Y") {
     ### Call Crop-Images function
-    crop-imagesrecursively -SourcePath $Deskewed -CroppedPath $Cropped -PaperSizes $ActivePaperSizes -ProfileName $PaperProfile -IrfanViewPath $IrfanView
+    crop-imagesrecursively -SourcePath $Deskewed -CroppedPath $Cropped -PaperSizes $ActivePaperSizes -ProfileName $PaperProfile -IrfanViewPath $IrfanView -TiffCompression $CompressionNumber
 }
 else {
     write-log " - Skipping crop of deskewed images back to correct size."
