@@ -44,19 +44,19 @@ The script locates IrfanView's active `i_view64.ini`, including an installer-con
 
 ## Currently supported page sizes
 
-The current crop profiles assume source images of approximately **600 DPI**.
+The crop profiles assume source images of approximately **600 DPI**. Select the required set with `$PaperProfile` in `doc-archiving.ps1`.
 
-| Profile | Target dimensions | Tolerance |
-| --- | ---: | ---: |
-| A4 | 4792 × 6846 px | 330 px |
-| A3 | 9268 × 6846 px | 600 px |
-| B&O-A3 | 8998 × 6670 px | 800 px |
-| B&O-A3-Long | 13660 × 6846 px | 400 px |
-| B&O-A3-Long-2 | 15450 × 6846 px | 200 px |
+| Paper profile | Page type | Recognition dimensions | Finished dimensions |
+| --- | --- | ---: | ---: |
+| Standard | A4 | 4792 × 6846 px, 330 px combined tolerance | 4792 × 6846 px |
+| Standard | A3 | 9268 × 6846 px, 600 px combined tolerance | 9268 × 6846 px |
+| B&O-Service-Manual | B&O-Standard | 4850–5050 × 6780–7000 px | 4950 × 6900 px |
+| B&O-Service-Manual | B&O-Wide | 9250–9500 × 6750–7000 px | 9413 × 6900 px |
+| B&O-Service-Manual | B&O-Foldout | At least 15000 × 6750–7050 px | Original width × 6900 px |
 
-Portrait and landscape orientations are both considered. Pages outside the configured tolerance are reported and left uncropped.
+The B&O profile deliberately separates recognition dimensions from finished dimensions. This allows scanner edge cleaning and deskew canvas expansion to be recognised while producing consistent PDF page sizes. Standard and wide pages are centred, cropped where larger than the target and padded where smaller. Foldouts retain their individual width while their height is normalised to 6900 pixels.
 
-The B&O profiles are custom large-format document sizes retained from the original workflow. Additional sizes can be added to `$PaperSizes` in `doc-archiving.ps1`.
+Portrait and landscape orientations are both considered. Pages outside the selected profile are reported as `[REVIEW]` and left unprocessed.
 
 ## Requirements
 
@@ -208,7 +208,7 @@ The detector still searches up to 10 degrees so large suspicious results are ide
 
 These safety values are grouped under `### Deskew safety settings` in `doc-archiving.ps1`. Margin exclusion is disabled by default for compatibility with older Deskew command-line builds; set `$DeskewDetectionMargins = "5,5,%"` only after confirming that the local executable supports `-m`. This favours preserving a slightly skewed source page over applying a destructive false rotation.
 
-Cropping compares each deskewed page with the configured paper profiles, including rotated orientation, and centre-crops a matching page to the target dimensions.
+Cropping compares each deskewed page only with the selected `$PaperProfile`, including rotated orientation. A matching page is centred and cropped or padded to its configured output dimensions; every written TIFF is reopened and its dimensions are verified.
 
 `img2pdf` then assembles the ordered TIFF pages into the final PDF.
 
