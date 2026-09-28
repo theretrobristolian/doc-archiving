@@ -83,16 +83,69 @@ $compressionMapping = @{
 $IrfanView          = "C:\Program Files\IrfanView\i_view64.exe"
 $IrfanViewIniPath   = $null # Optional: set to a specific INI file or folder; $null enables automatic discovery.
 
-### Define Paper Sizes ###
-#This hash table is working on the assumption that the input files are 600DPI
-$PaperSizes = @{
-    'A4'            = @(4792, 6846, 330)
-    'A3'            = @(9268, 6846, 600)
-    'B&O-A3'        = @(8998, 6670, 800)
-    'B&O-A3-Long'   = @(13660, 6846, 400)
-    'B&O-A3-Long-2' = @(15450, 6846, 200)
+### Define Paper Profiles ###
+# Profiles use 600-DPI pixel dimensions. Match dimensions identify the
+# scanner/deskew output; output dimensions define the finished PDF page.
+#
+# Select "B&O-Service-Manual" when processing the custom B&O manual pages.
+$PaperProfile = "Standard"
+
+$PaperProfiles = @{
+    'Standard' = @{
+        'A4' = @{
+            MatchWidthPx     = 4792
+            MatchHeightPx    = 6846
+            TotalTolerancePx = 330
+            OutputWidthPx    = 4792
+            OutputHeightPx   = 6846
+            PreserveWidth    = $false
+        }
+        'A3' = @{
+            MatchWidthPx     = 9268
+            MatchHeightPx    = 6846
+            TotalTolerancePx = 600
+            OutputWidthPx    = 9268
+            OutputHeightPx   = 6846
+            PreserveWidth    = $false
+        }
+    }
+
+    'B&O-Service-Manual' = @{
+        'B&O-Standard' = @{
+            MinimumWidthPx   = 4850
+            MaximumWidthPx   = 5050
+            MinimumHeightPx  = 6780
+            MaximumHeightPx  = 7000
+            OutputWidthPx    = 4950
+            OutputHeightPx   = 6900
+            PreserveWidth    = $false
+        }
+        'B&O-Wide' = @{
+            MinimumWidthPx   = 9250
+            MaximumWidthPx   = 9500
+            MinimumHeightPx  = 6750
+            MaximumHeightPx  = 7000
+            OutputWidthPx    = 9413
+            OutputHeightPx   = 6900
+            PreserveWidth    = $false
+        }
+        'B&O-Foldout' = @{
+            MinimumWidthPx   = 15000
+            MaximumWidthPx   = [int]::MaxValue
+            MinimumHeightPx  = 6750
+            MaximumHeightPx  = 7050
+            OutputWidthPx    = $null
+            OutputHeightPx   = 6900
+            PreserveWidth    = $true
+        }
+    }
 }
 
+if (-not $PaperProfiles.ContainsKey($PaperProfile)) {
+    throw "Unknown paper profile '$PaperProfile'. Available profiles: $($PaperProfiles.Keys -join ', ')"
+}
+
+$ActivePaperSizes = $PaperProfiles[$PaperProfile]
 ### Default folders to create on first run
 $RequiredFolders = @(
     "1 - source",
@@ -238,7 +291,7 @@ write-log ""
 write-log "Attempting Crop..."
 if ($Run_Crop -eq "Y") {
     ### Call Crop-Images function
-    crop-imagesrecursively -SourcePath $Deskewed -CroppedPath $Cropped -PaperSizes $PaperSizes -IrfanViewPath $IrfanView
+    crop-imagesrecursively -SourcePath $Deskewed -CroppedPath $Cropped -PaperSizes $ActivePaperSizes -ProfileName $PaperProfile -IrfanViewPath $IrfanView
 }
 else {
     write-log " - Skipping crop of deskewed images back to correct size."
