@@ -168,24 +168,24 @@ The source may be a multipage TIFF or multiple TIFF files. Extracted pages are r
 Deskewed pages may remain directly inside their document folder, preserving the original behaviour. Alternatively, create either or both of these immediate subfolders beneath a deskewed document:
 
 ```text
-3 - deskewed\\
-└── example-document\\
-    ├── colour\\
+3 - deskewed\
+└── example-document\
+    ├── colour\
     │   ├── 001.tif
     │   └── 002.tif
-    └── black-white\\
+    └── black-white\
         ├── 003.tif
         └── 004.tif
 ```
 
 During cropping:
 
-- files in `colour\\` retain their colour depth and use lossless LZW compression;
-- files in `black-white\\` are converted to true 1-bit monochrome without dithering and use CCITT Fax 4 compression;
+- files in `colour\` retain their colour depth and use lossless LZW compression;
+- files in `black-white\` are converted to true 1-bit monochrome without dithering and use CCITT Fax 4 compression;
 - files directly inside the document folder continue using the configured/default compression;
 - the special folders are flattened back into one cropped document folder, preserving filename-based PDF page ordering.
 
-The crop stage checks the complete flattened destination plan before writing anything. Duplicate filenames across the document root, `colour\\` and `black-white\\` cause the run to stop rather than overwrite a page. Black-and-white output is verified as 1 BPP, and readable TIFF compression tags are checked against the requested compression.
+The crop stage checks the complete flattened destination plan before writing anything. Duplicate filenames across the document root, `colour\` and `black-white\` cause the run to stop rather than overwrite a page. Black-and-white output is verified as 1 BPP, and readable TIFF compression tags are checked against the requested compression.
 
 The final output will be:
 
