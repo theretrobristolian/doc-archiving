@@ -163,6 +163,30 @@ Create one subfolder beneath `1 - source` for each document:
 
 The source may be a multipage TIFF or multiple TIFF files. Extracted pages are renamed sequentially as `001.tif`, `002.tif` and so on.
 
+### Optional mixed colour and black-and-white crop processing
+
+Deskewed pages may remain directly inside their document folder, preserving the original behaviour. Alternatively, create either or both of these immediate subfolders beneath a deskewed document:
+
+```text
+3 - deskewed\\
+└── example-document\\
+    ├── colour\\
+    │   ├── 001.tif
+    │   └── 002.tif
+    └── black-white\\
+        ├── 003.tif
+        └── 004.tif
+```
+
+During cropping:
+
+- files in `colour\\` retain their colour depth and use lossless LZW compression;
+- files in `black-white\\` are converted to true 1-bit monochrome without dithering and use CCITT Fax 4 compression;
+- files directly inside the document folder continue using the configured/default compression;
+- the special folders are flattened back into one cropped document folder, preserving filename-based PDF page ordering.
+
+The crop stage checks the complete flattened destination plan before writing anything. Duplicate filenames across the document root, `colour\\` and `black-white\\` cause the run to stop rather than overwrite a page. Black-and-white output is verified as 1 BPP, and readable TIFF compression tags are checked against the requested compression.
+
 The final output will be:
 
 ```text
@@ -208,7 +232,7 @@ The detector still searches up to 10 degrees so large suspicious results are ide
 
 These safety values are grouped under `### Deskew safety settings` in `doc-archiving.ps1`. Margin exclusion is disabled by default for compatibility with older Deskew command-line builds; set `$DeskewDetectionMargins = "5,5,%"` only after confirming that the local executable supports `-m`. This favours preserving a slightly skewed source page over applying a destructive false rotation.
 
-Cropping compares each deskewed page only with the selected `$PaperProfile`, including rotated orientation. A matching page is centred and cropped or padded to its configured output dimensions; every written TIFF is reopened and its dimensions are verified.
+Cropping compares each deskewed page only with the selected `$PaperProfile`, including rotated orientation. A matching page is centred and cropped or padded to its configured output dimensions; every written TIFF is reopened and its dimensions are verified. Optional `colour` and `black-white` folders select LZW or 1-bit CCITT Fax 4 output and are flattened into the cropped document root after duplicate-name validation.
 
 `img2pdf` then assembles the ordered TIFF pages into the final PDF.
 
